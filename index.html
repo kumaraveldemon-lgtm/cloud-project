@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BoxCraft — Manufacturing & Production Tracking</title>
+  <meta name="description" content="Corrugated Box Manufacturing Management System — Employee Attendance, Warehouse & Reel Stock, Production Planning, Order & Customer History">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ================================================================
+     SIDEBAR NAVIGATION
+     ================================================================ -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">📦</div>
+    <h1>BoxCraft MFG</h1>
+    <span>Management & Production System</span>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <div class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">🏠</span> Dashboard
+    </div>
+
+    <div class="nav-section-label">Modules</div>
+    <div class="nav-item" data-page="employees">
+      <span class="nav-icon">👷</span> Employee Attendance
+    </div>
+    <div class="nav-item" data-page="warehouse">
+      <span class="nav-icon">📦</span> Warehouse & Reels
+      <span class="nav-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" data-page="production">
+      <span class="nav-icon">🏭</span> Production Planning
+    </div>
+    <div class="nav-item" data-page="orders">
+      <span class="nav-icon">📋</span> Order Management
+    </div>
+    <div class="nav-item" data-page="customers">
+      <span class="nav-icon">🏢</span> Customers & History
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="company-name" id="sidebar-company">BoxCraft Industries Pvt. Ltd.</div>
+    <div>v1.0 · Management System</div>
+  </div>
+</nav>
+
+<!-- ================================================================
+     MAIN CONTENT AREA
+     ================================================================ -->
+<div id="main">
+
+  <!-- Top Bar -->
+  <header id="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-subtitle" id="topbar-subtitle">Overview of all operations</div>
+    </div>
+    <div class="topbar-actions">
+      <div class="alert-dot" title="Low stock alerts active"></div>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main id="content">
+
+    <!-- ============================================================
+         PAGE: DASHBOARD
+         ============================================================ -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>Good day! Here's your factory overview 🏭</h2>
+          <p>Real-time snapshot of operations, alerts, and active orders.</p>
+        </div>
+      </div>
+
+      <div id="dash-alerts"></div>
+
+      <div class="kpi-grid" id="dash-kpi"></div>
+
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-header">
+            <h3>📋 Recent Orders</h3>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('orders')">View All →</button>
+          </div>
+          <div id="dash-recent-orders" class="card-body" style="padding:0"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3>🏭 Live Production</h3>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('production')">Details →</button>
+          </div>
+          <div id="dash-live-production" class="card-body"></div>
+        </div>
+      </div>
+
+      <!-- ============================================================
+           REEL STOCK DASHBOARD PANEL
+           ============================================================ -->
+      <div class="card" style="margin-top:24px">
+        <div class="card-header">
+          <h3>📜 Reel Stock Overview</h3>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('warehouse')">Full Stock Register →</button>
+        </div>
+        <div id="dash-reel-stock" class="card-body"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: MODULE 1 — EMPLOYEE ATTENDANCE
+         ============================================================ -->
+    <section class="page" id="page-employees">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>👷 Module 1 — Employee Attendance & Working Hours</h2>
+          <p>Track daily presence, absence, leave, and overtime for every employee.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" id="add-employee-btn" onclick="showAddEmployeeModal()">
+            ＋ Add Employee
+          </button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="attendance" onclick="empActiveTab='attendance';renderEmpTabs()">📅 Daily Attendance</button>
+        <button class="tab-btn" data-tab="employees" onclick="empActiveTab='employees';renderEmpTabs()">👥 Employee Master</button>
+        <button class="tab-btn" data-tab="summary" onclick="empActiveTab='summary';renderEmpTabs()">📊 Monthly Summary</button>
+      </div>
+
+      <!-- TAB: Daily Attendance -->
+      <div class="tab-panel active" data-panel="attendance">
+        <div class="filters-bar">
+          <div class="filter-search">
+            <input type="date" id="att-date" style="padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font);outline:none;font-size:13px" onchange="renderAttendanceGrid()">
+          </div>
+          <select class="filter-select" id="att-dept-filter" onchange="renderAttendanceGrid()">
+            <option value="">All Departments</option>
+            <option>Corrugation</option><option>Printing</option><option>Die-cutting</option>
+            <option>Stitching</option><option>Dispatch</option><option>Admin</option><option>Quality</option><option>Maintenance</option>
+          </select>
+          <button class="btn btn-success btn-sm" onclick="bulkMarkPresent()">✓ Mark All Present</button>
+        </div>
+
+        <div id="att-stats-bar"></div>
+
+        <div class="attendance-grid">
+          <div class="table-wrapper">
+            <table class="att-table">
+              <thead>
+                <tr>
+                  <th>EMP ID</th><th>Name</th><th>Dept</th><th>Shift</th>
+                  <th>Attendance Status</th><th>Check-In</th><th>Check-Out</th>
+                  <th>Working Hrs</th><th>OT Hrs</th><th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="att-grid-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Employee Master -->
+      <div class="tab-panel" data-panel="employees">
+        <div class="filters-bar">
+          <div class="filter-search">
+            <input type="text" id="emp-search" placeholder="Search employee..." oninput="renderEmployeeList()">
+          </div>
+          <select class="filter-select" id="emp-dept-filter" onchange="renderEmployeeList()">
+            <option value="">All Departments</option>
+            <option>Corrugation</option><option>Printing</option><option>Die-cutting</option>
+            <option>Stitching</option><option>Dispatch</option><option>Admin</option><option>Quality</option><option>Maintenance</option>
+          </select>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>EMP ID</th><th>Name</th><th>Department</th><th>Designation</th>
+                <th>Shift</th><th>Date of Joining</th><th>Phone</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="emp-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: Monthly Summary -->
+      <div class="tab-panel" data-panel="summary">
+        <div class="filters-bar">
+          <div class="form-group" style="margin:0">
+            <input type="month" id="summary-month" class="filter-select" onchange="renderAttendanceSummary()" style="padding:8px 12px">
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>EMP ID</th><th>Name</th><th>Dept</th>
+                <th>Present</th><th>Absent</th><th>Half-day</th><th>Leave</th>
+                <th>Total Working Hrs</th><th>Overtime Hrs</th>
+              </tr>
+            </thead>
+            <tbody id="att-summary-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: MODULE 2 — WAREHOUSE & REEL STOCK
+         ============================================================ -->
+    <section class="page" id="page-warehouse">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>📦 Module 2 — Warehouse & Reel Stock Management</h2>
+          <p>Track raw material (paper reels) inventory, stock-in/out, and supplier history.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="showStockInModal()">📥 Stock-In</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="stock" onclick="warehouseActiveTab='stock';renderWarehouseTabs()">📦 Stock Register</button>
+        <button class="tab-btn" data-tab="ageing" onclick="warehouseActiveTab='ageing';renderWarehouseTabs()">⏳ Ageing Report</button>
+        <button class="tab-btn" data-tab="supplier" onclick="warehouseActiveTab='supplier';renderWarehouseTabs()">🏭 Supplier History</button>
+      </div>
+
+      <!-- TAB: Stock Register -->
+      <div class="tab-panel active" data-panel="stock">
+        <div id="wh-summary"></div>
+        <div id="wh-alerts"></div>
+        <div class="filters-bar">
+          <div class="filter-search">
+            <input type="text" id="wh-search" placeholder="Search by reel ID, supplier, colour..." oninput="renderStockTable()">
+          </div>
+          <select class="filter-select" id="wh-colour-filter" onchange="renderStockTable()">
+            <option value="">All Types</option>
+            <option>Kraft</option><option>White</option><option>Golden Yellow</option><option>Duplex</option>
+          </select>
+          <select class="filter-select" id="wh-status-filter" onchange="renderStockTable()">
+            <option value="">All Status</option>
+            <option>In Stock</option><option>Reserved for Order</option><option>Consumed</option>
+          </select>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Reel/Lot ID</th><th>Size (in)</th><th>GSM</th><th>BF</th><th>Type</th>
+                <th>Supplier</th><th>Date Received</th><th>Reels Count</th><th>Weight (kg)</th>
+                <th>Stock Level</th><th>Location</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="wh-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: Ageing Report -->
+      <div class="tab-panel" data-panel="ageing">
+        <div class="alert-banner info mb-16">
+          <span class="alert-icon">ℹ️</span>
+          <div class="alert-text"><strong>Ageing Report</strong>Showing reels in warehouse beyond the configured threshold (default: 30 days).</div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Reel ID</th><th>Size</th><th>Colour/GSM</th><th>Supplier</th><th>Date Bought</th><th>Days in Warehouse</th><th>Available (kg)</th><th>Value at Risk</th></tr>
+            </thead>
+            <tbody id="ageing-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: Supplier History -->
+      <div class="tab-panel" data-panel="supplier">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Supplier Name</th><th>Lots Purchased</th><th>Total Qty (kg)</th><th>Avg Rate/kg</th><th>Total Value</th><th>Grades Supplied</th><th>Last Purchase</th></tr>
+            </thead>
+            <tbody id="supplier-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: MODULE 3 — PRODUCTION LINE PLANNING
+         ============================================================ -->
+    <section class="page" id="page-production">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>🏭 Module 3 — Production Line Planning</h2>
+          <p>Plan and track production across machines. Monitor stage-wise progress in real time.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="showAddProdModal()">＋ New Production Plan</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="board" onclick="prodActiveTab='board';renderProductionTabs()">🗂 Machine Board</button>
+        <button class="tab-btn" data-tab="live" onclick="prodActiveTab='live';renderProductionTabs()">🔴 Orders Currently Moving</button>
+        <button class="tab-btn" data-tab="plans" onclick="prodActiveTab='plans';renderProductionTabs()">📋 All Plans</button>
+      </div>
+
+      <!-- TAB: Machine Board -->
+      <div class="tab-panel active" data-panel="board">
+        <div class="filters-bar">
+          <label style="font-size:12px;color:var(--text-secondary)">Filter by date:</label>
+          <input type="date" id="prod-date-filter" style="padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-family:var(--font);outline:none;font-size:13px" onchange="renderProductionBoard()">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('prod-date-filter').value='';renderProductionBoard()">Clear</button>
+        </div>
+        <div id="prod-board"></div>
+      </div>
+
+      <!-- TAB: Live Orders -->
+      <div class="tab-panel" data-panel="live">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Order No.</th><th>Customer</th><th>Box Spec</th><th>Qty</th><th>Production Stage</th><th>Delivery Date</th><th>Timeline</th></tr>
+            </thead>
+            <tbody id="live-orders-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: All Plans -->
+      <div class="tab-panel" data-panel="plans">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Plan ID</th><th>Order</th><th>Machine</th><th>Planned Date</th><th>Current Stage</th><th>Qty Planned</th><th>Qty Produced</th><th>Wastage</th><th>Status</th><th>ETA</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="prod-list-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: MODULE 4 — ORDER MANAGEMENT
+         ============================================================ -->
+    <section class="page" id="page-orders">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>📋 Module 4 — Order Management</h2>
+          <p>Full lifecycle of customer orders — from booking through production to dispatch.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="showAddOrderModal()">＋ New Order</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="current" onclick="ordersActiveTab='current';renderOrdersTabs()">🔵 Current Orders</button>
+        <button class="tab-btn" data-tab="past" onclick="ordersActiveTab='past';renderOrdersTabs()">✅ Past Orders</button>
+      </div>
+
+      <!-- TAB: Current Orders -->
+      <div class="tab-panel active" data-panel="current">
+        <div id="cur-order-stats"></div>
+        <div class="filters-bar">
+          <div class="filter-search">
+            <input type="text" id="cur-order-search" placeholder="Search orders..." oninput="renderCurrentOrders()">
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Order No.</th><th>Customer</th><th>Box Spec</th><th>Ply</th><th>Qty</th><th>Order Date</th><th>Price/Box</th><th>Order Value</th><th>Delivery Date</th><th>Production Stage</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="cur-order-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: Past Orders -->
+      <div class="tab-panel" data-panel="past">
+        <div class="filters-bar">
+          <div class="filter-search">
+            <input type="text" id="past-cust-filter" placeholder="Filter by customer name..." oninput="renderPastOrders()">
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Order No.</th><th>Customer</th><th>Box Spec</th><th>Qty</th><th>Order Date</th><th>Dispatch Date</th><th>Price/Box</th><th>Order Value</th><th>Status</th></tr>
+            </thead>
+            <tbody id="past-order-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         PAGE: MODULE 5 — CUSTOMER MANAGEMENT
+         ============================================================ -->
+    <section class="page" id="page-customers">
+      <div class="page-header">
+        <div class="page-header-left">
+          <h2>🏢 Module 5 — Customer Management & History</h2>
+          <p>Customer master, complete order history, revenue tracking, and price lookups.</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-primary" onclick="showAddCustomerModal()">＋ Add Customer</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="master" onclick="custActiveTab='master';renderCustomerTabs()">📇 Customer Master</button>
+        <button class="tab-btn" data-tab="history" onclick="custActiveTab='history';renderCustomerTabs()">📊 Order History</button>
+        <button class="tab-btn" data-tab="ranking" onclick="custActiveTab='ranking';renderCustomerTabs()">🏆 Top Customers</button>
+      </div>
+
+      <!-- TAB: Customer Master -->
+      <div class="tab-panel active" data-panel="master">
+        <div class="filters-bar">
+          <div class="filter-search">
+            <input type="text" id="cust-search" placeholder="Search customers..." oninput="renderCustomerMaster()">
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Company Name</th><th>Contact</th><th>Phone</th><th>GSTIN</th><th>City</th><th>Category</th><th>Credit Limit</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="cust-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: Order History -->
+      <div class="tab-panel" data-panel="history">
+        <div class="filters-bar">
+          <label style="font-size:12px;color:var(--text-secondary);white-space:nowrap">Select Customer:</label>
+          <select class="filter-select" id="hist-cust-select" onchange="renderCustomerHistory()" style="min-width:250px;font-size:13px;padding:8px 28px 8px 12px">
+            <option value="">— Select a customer —</option>
+          </select>
+        </div>
+        <div id="cust-history-content"></div>
+      </div>
+
+      <!-- TAB: Top Customers Ranking -->
+      <div class="tab-panel" data-panel="ranking">
+        <div class="card" style="max-width:620px">
+          <div class="card-header"><h3>🏆 Top Customers by Revenue</h3></div>
+          <div class="card-body" id="cust-ranking"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ================================================================
+     SHARED MODAL
+     ================================================================ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3 id="modal-title">Modal</h3>
+      <button class="modal-close" id="modal-close-btn">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+  // Initialize date inputs
+  window.addEventListener('DOMContentLoaded', () => {
+    const attDate = document.getElementById('att-date');
+    if (attDate) attDate.value = new Date().toISOString().split('T')[0];
+
+    const summaryMonth = document.getElementById('summary-month');
+    if (summaryMonth) summaryMonth.value = new Date().toISOString().substr(0,7);
+
+    // Populate customer history dropdown dynamically
+    function populateCustomerDropdown() {
+      const sel = document.getElementById('hist-cust-select');
+      if (!sel) return;
+      const customers = JSON.parse(localStorage.getItem('cbm_customers') || '[]');
+      sel.innerHTML = '<option value="">— Select a customer —</option>' +
+        customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+    // Re-populate on customer tab click
+    document.querySelector('[data-tab="history"]')?.addEventListener('click', populateCustomerDropdown);
+    populateCustomerDropdown();
+  });
+
+  // Bulk mark all present
+  function bulkMarkPresent() {
+    const attDate = document.getElementById('att-date')?.value || new Date().toISOString().split('T')[0];
+    const employees = JSON.parse(localStorage.getItem('cbm_employees') || '[]');
+    let att = JSON.parse(localStorage.getItem('cbm_attendance') || '[]');
+    employees.forEach(emp => {
+      let rec = att.find(a => a.empId === emp.id && a.date === attDate);
+      if (!rec) {
+        rec = { id: 'ID' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2,4).toUpperCase(),
+          empId: emp.id, empName: emp.name, dept: emp.dept, date: attDate, shift: emp.shift,
+          checkin: '08:30', checkout: '17:30', status: 'present', workingHours: 9, overtime: 1, remarks: '' };
+        att.push(rec);
+      } else {
+        rec.status = 'present';
+        if (!rec.checkin) { rec.checkin = '08:30'; rec.checkout = '17:30'; rec.workingHours = 9; rec.overtime = 1; }
+      }
+    });
+    localStorage.setItem('cbm_attendance', JSON.stringify(att));
+    if (typeof renderAttendanceGrid === 'function') renderAttendanceGrid();
+  }
+</script>
+</body>
+</html>
